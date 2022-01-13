@@ -24,19 +24,28 @@ const file = fs.createWriteStream("Games.txt");
 
     await page.waitForNetworkIdle();
 
+    const regex = /(Game)|(Beta)/;
+    // .y8HYJ-y_lTUHkQIc1mdCq a
+    // ._2FCtq-QzlfuN-SwVMUZMM3 div
     let allGames = await page.evaluate(() =>
-      [...document.querySelectorAll("._2SdHzo12ISmrC8H86TgSCp")].map(
-        (elem) => elem.innerText
-      )
+      [...document.querySelectorAll(".y8HYJ-y_lTUHkQIc1mdCq")].map((elem) => {
+        const remove = /Expired|(DLC)/g;
+        const keep = /(Game)|(Beta)|(Other)/g;
+        if (elem && elem.innerText) {
+          //Check if elem and elem innerText exists
+          if (!remove.test(elem.innerText) && keep.test(elem.innerText)) {
+            return elem.innerText;
+          } else {
+            return null;
+          }
+        }
+      })
     );
 
-    const regex = /(Game)|(Beta)/;
-
-    allGames.splice(0, 2);
-    allGames = allGames.filter((value) => regex.test(value));
+    allGames = allGames.filter((val) => val !== null);
 
     file.on("error", function (err) {
-      Console.log(err);
+      console.log(err);
     });
     allGames.forEach((value) => file.write(`${value}\r\n`));
     file.end();
